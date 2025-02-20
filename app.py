@@ -1,6 +1,6 @@
 import streamlit as st
-from app_6_1 import cos_8k_image_to_text, cos_8k_text_to_image
-from app_6_2 import cos_30k_image_to_text, cos_30k_text_to_image
+from app_6_1 import cos_8k_image_to_text, cos_8k_text_to_image, cos_8k_image_to_image_top
+from app_6_2 import cos_30k_image_to_text, cos_30k_text_to_image, cos_30k_image_to_image_top
 from app_6_3 import generate_caption
 from app_6_4 import generate_transform_caption
 
@@ -76,6 +76,25 @@ def clip_vitb32_gpt2_text_to_image(caption):
     st.write("Processing text to image using CLIPViTB32->GPT2...")
     # Add your text-to-image processing code here
 
+def cosine_similarity_8k_image_to_image(image):
+    st.write("Processing iamge to Image using CosineSimilarity8k...")
+    # Add your image-to-image processing code here
+    most_similar_image_path, idx = cos_8k_image_to_image_top(image)
+    st.image(most_similar_image_path, caption="Most similar image", use_container_width=True)
+    st.write(f"Most similar index: {idx}")
+
+def cosine_similarity_30k_image_to_image(image):
+    st.write("Processing iamge to Image using CosineSimilarity30k...")
+    # Add your image-to-image processing code here
+    most_similar_image_path, idx = cos_30k_image_to_image_top(image)
+    st.image(most_similar_image_path, caption="Most similar image", use_container_width=True)
+    st.write(f"Most similar index: {idx}")
+
+def clip_vitb32_lstm_attention_image_to_image(image):
+    pass
+
+def clip_vitb32_gpt2_image_to_image(image):
+    pass
 
 
 
@@ -87,14 +106,10 @@ st.sidebar.title("Options")
 dropdown_options = ["CosineSimilarity8k", "CosineSimilarity30k", "CLIPViTB32->LSTM:Attention", "CLIPViTB32->GPT2"]
 selected_option = st.sidebar.selectbox("Select an option", dropdown_options)
 st.sidebar.title("Image and Text Processing")
-task = st.sidebar.radio("Choose a task", ("Image-to-Text", "Text-to-Image"))
-
-# Radio buttons for image-to-text and text-to-image
-#st.title("Image and Text Processing")
-#task = st.radio("Choose a task", ("Image-to-Text", "Text-to-Image"))
+task = st.sidebar.radio("Choose a task", ("Image-to-Text", "Text-to-Image", "Image-to-Image"))
 
 # Upload image
-if task == "Image-to-Text":
+if task in ["Image-to-Text" , "Image-to-Image"]:
     uploaded_image = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
     if uploaded_image is not None:
         st.image(uploaded_image, caption="Uploaded Image", use_container_width=True)
@@ -105,7 +120,8 @@ if task == "Image-to-Text":
             st.image(captured_image, caption="Captured Image", use_container_width=True)
             image = captured_image
         else:
-            image = None
+            image = None 
+
 
 # Enter caption
 if task == "Text-to-Image":
@@ -133,5 +149,15 @@ if st.button("Process"):
             clip_vitb32_lstm_attention_text_to_image(caption)
         elif selected_option == "CLIPViTB32->GPT2":
             clip_vitb32_gpt2_text_to_image(caption)
+    elif task == 'Image-to-Image' and image is not None:
+        if selected_option == "CosineSimilarity8k":
+            cosine_similarity_8k_image_to_image(image)
+        elif selected_option == "CosineSimilarity30k":
+            cosine_similarity_30k_image_to_image(image)
+        elif selected_option == "CLIPViTB32->LSTM:Attention":
+            clip_vitb32_lstm_attention_image_to_image(image)
+        elif selected_option == "CLIPViTB32->GPT2":
+            clip_vitb32_gpt2_image_to_image(image)
+
     else:
         st.write("Please upload an image or enter a caption to proceed.")
