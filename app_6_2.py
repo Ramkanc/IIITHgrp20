@@ -4,6 +4,7 @@ import clip
 from PIL import Image
 import numpy as np
 import pandas as pd
+import os
 
 # Load the CLIP model
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -17,7 +18,10 @@ captions_df = pd.read_csv(captions_file, delimiter=",", header=0)
 # Load precomputed features
 text_features_cache = np.load("text_features_cache_30k.npy")
 image_features_cache = np.load("image_features_cache_30k.npy")
-image_paths = np.load("image_paths_30k.npy", allow_pickle=True)
+#image_paths = np.load("image_paths_30k.npy", allow_pickle=True)
+image_dir = r"C:\Users\Hp\Documents\IIIT\Capstone\App\flickr30k\Images"
+# Get a list of all image files in the folder
+image_paths = [os.path.join(image_folder, file) for file in os.listdir(image_folder) if file.endswith((".jpg", ".png", ".jpeg"))]
 
 def cos_30k_image_to_text(image):
     try:
@@ -61,3 +65,31 @@ def cos_30k_text_to_image(caption):
         return most_similar_image_path, most_similar_idx
     except Exception as e:
         raise RuntimeError(f"Error processing input caption: {e}")
+    
+
+def cos_30k_image_to_image_top(image_path):
+    try:
+        # Preprocess the query image
+        with Image.open(image_path).convert("RGB") as image:
+            input_image = preprocess(image).unsqueeze(0).to(device)
+
+        # Encode the query image
+        with torch.no_grad():
+            query_features = model.encode_image(input_image)
+            query_features = query_features / query_features.norm(dim=-1, keepdim=True)
+
+        # Convert query features to numpy for CPU computation
+        query_features_np = query_features.cpu().numpy()
+
+        # Compute similarities in batch
+        similarities = np.dot(image_features_cache, query_features_np.T).squeeze()
+
+        # Find the index with the highest similarity
+        most_similar_idx = np.argmax(similarities)
+        most_similar_image_path = image_paths[most_similar_idx]
+        similarity_score = similarities[most_similar_idx]
+
+        return most_similar_image_path, similarity_score
+
+    except Exception as e:
+        raise RuntimeError(f"Error retrieving top image: {e}")

@@ -32,7 +32,7 @@ image_features_cache = []
 image_paths = []
 for idx, row in captions_df.iterrows():
     image_id = row['image']
-    image_path = os.path.join(r"C:\Users\kancharr\Documents\IIIT\Flickr8k\Images", f"{image_id}.jpg")
+    image_path = os.path.join(r"C:\Users\Hp\Documents\IIIT\Capstone\App\flickr8k\Images", f"{image_id}.jpg")
     image = Image.open(image_path).convert("RGB")
     image = preprocess(image).unsqueeze(0).to(device)
     with torch.no_grad():
