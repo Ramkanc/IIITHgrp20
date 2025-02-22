@@ -19,9 +19,12 @@ captions_df = pd.read_csv(captions_file, delimiter=",", header=0)
 text_features_cache = np.load("text_features_cache_30k.npy")
 image_features_cache = np.load("image_features_cache_30k.npy")
 #image_paths = np.load("image_paths_30k.npy", allow_pickle=True)
-image_dir = r"C:\Users\Hp\Documents\IIIT\Capstone\App\flickr30k\Images"
+image_folder = r".\flickr30k\Images"
 # Get a list of all image files in the folder
-image_paths = [os.path.join(image_folder, file) for file in os.listdir(image_folder) if file.endswith((".jpg", ".png", ".jpeg"))]
+#image_paths = [os.path.join(image_folder, file) for file in captions_df["image"]+".jpg"]
+image_paths = [os.path.join(image_folder, file + ".jpg") for file in captions_df["image"].astype(str)]
+
+#print(len(image_paths))
 
 def cos_30k_image_to_text(image):
     try:
@@ -41,7 +44,7 @@ def cos_30k_image_to_text(image):
         # Find the most similar caption
         most_similar_idx = np.argmax(similarities)
         most_similar_caption = captions_df.iloc[most_similar_idx]['caption']
-        return most_similar_caption, most_similar_idx  
+        return most_similar_caption, similarities[most_similar_idx] 
     except Exception as e:
         raise RuntimeError(f"Error processing uploaded image: {e}")
       
@@ -62,7 +65,7 @@ def cos_30k_text_to_image(caption):
         # Find the most similar image
         most_similar_idx = np.argmax(similarities)
         most_similar_image_path = image_paths[most_similar_idx]
-        return most_similar_image_path, most_similar_idx
+        return most_similar_image_path, similarities[most_similar_idx]
     except Exception as e:
         raise RuntimeError(f"Error processing input caption: {e}")
     
